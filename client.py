@@ -69,7 +69,7 @@ def get_nick_from_source(source):
     return source
 
 
-def priv_msg_responder(source, rest):
+def priv_msg_responder(sock, source, rest):
     # split up the rest of the privmsg to get the target
     target, message = rest.split(" ", 1)
     if 'What is the time?' in message:
@@ -82,7 +82,7 @@ def priv_msg_responder(source, rest):
             )
         )
 
-def join_responder(source, room_joined):
+def join_responder(sock, source, room_joined):
     sock.send(
        priv_msg(
            room_joined,
@@ -94,7 +94,7 @@ def join_responder(source, room_joined):
     )
 
 
-def pong_msg_responder(source, rest):
+def pong_msg_responder(sock, source, rest):
     sock.send(pong_msg(rest))
 
 
@@ -105,11 +105,11 @@ COMMANDS = {
 }
 
 
-def action_on_commands(source, command, rest):
-    def do_nothing(s, r):
+def action_on_commands(sock, source, command, rest):
+    def do_nothing(sock, s, r):
         return
 
-    return COMMANDS.get(command, do_nothing)(source, rest)
+    return COMMANDS.get(command, do_nothing)(sock, source, rest)
 
 
 def read_loop(sock):
@@ -125,7 +125,7 @@ def read_loop(sock):
                 if not message:
                     continue
                 source, command, rest = parse_message(message)
-                action_on_commands(source, command, rest)
+                action_on_commands(sock, source, command, rest)
     except KeyboardInterrupt:
         pass
 
